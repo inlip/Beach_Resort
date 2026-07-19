@@ -2,8 +2,8 @@
 
 import * as React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CalendarDays, Users, BedDouble, Baby, Check, Sparkles } from 'lucide-react';
-import { ROOMS } from '@/lib/data';
+import { CalendarDays, Users, BedDouble, Baby, Check, Sparkles, Mail, Phone, User } from 'lucide-react';
+import { RESORT, ROOMS } from '@/lib/data';
 import { Reveal } from '@/components/motion';
 import { useToast } from '@/hooks/use-toast';
 
@@ -19,8 +19,13 @@ function nightsBetween(a: string, b: string) {
   return Math.max(0, Math.round(ms / 86400000));
 }
 
+const BOOKINGS_STORAGE_KEY = 'azurea-bookings';
+
 export function BookingInner() {
   const { toast } = useToast();
+  const [guestName, setGuestName] = React.useState('');
+  const [guestPhone, setGuestPhone] = React.useState('');
+  const [guestEmail, setGuestEmail] = React.useState('');
   const [checkIn, setCheckIn] = React.useState(todayISO(1));
   const [checkOut, setCheckOut] = React.useState(todayISO(4));
   const [adults, setAdults] = React.useState(2);
@@ -36,7 +41,7 @@ export function BookingInner() {
   const taxes = Math.round(base * 0.12);
   const total = base + service + taxes;
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (nights < 1) {
       toast({
@@ -46,10 +51,69 @@ export function BookingInner() {
       });
       return;
     }
+
+    const booking = {
+      id: `AZ-${Date.now()}`,
+      guestName,
+      guestPhone,
+      guestEmail,
+      checkIn,
+      checkOut,
+      adults,
+      children,
+      room: room.name,
+      nights,
+      requests,
+      total,
+      createdAt: new Date().toISOString(),
+    };
+
+    try {
+      const savedBookings = JSON.parse(
+        window.localStorage.getItem(BOOKINGS_STORAGE_KEY) || '[]',
+      );
+      window.localStorage.setItem(
+        BOOKINGS_STORAGE_KEY,
+        JSON.stringify([booking, ...savedBookings]),
+      );
+    } catch {
+      // Some embedded browsers can disable localStorage. The server save below still records it.
+    }
+
+    const response = await fetch('/api/bookings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(booking),
+    });
+
+    if (!response.ok) {
+      toast({
+        title: 'Could not save booking',
+        description: 'Please try again before sending the WhatsApp request.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const message = [
+      `New booking request for ${RESORT.fullName}`,
+      `Booking ID: ${booking.id}`,
+      `Guest: ${guestName}`,
+      `Phone: ${guestPhone}`,
+      `Email: ${guestEmail}`,
+      `Stay: ${checkIn} to ${checkOut} (${nights} ${nights === 1 ? 'night' : 'nights'})`,
+      `Guests: ${adults} adult${adults === 1 ? '' : 's'}, ${children} child${children === 1 ? '' : 'ren'}`,
+      `Room: ${room.name}`,
+      `Estimated total: $${total.toLocaleString()}`,
+      `Special requests: ${requests || 'None'}`,
+    ].join('\n');
+
+    window.open(`${RESORT.whatsappHref}?text=${encodeURIComponent(message)}`, '_blank');
+
     setConfirmed(true);
     toast({
-      title: 'Reservation request received',
-      description: `A concierge will confirm your ${nights}-night ${room.name} shortly.`,
+      title: 'Reservation saved',
+      description: 'Your booking details were stored and WhatsApp is ready to send.',
     });
   };
 
@@ -135,6 +199,40 @@ export function BookingInner() {
                       onSubmit={submit}
                       className="space-y-5"
                     >
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <Field label="Guest name" icon={User}>
+                          <input
+                            type="text"
+                            value={guestName}
+                            onChange={(e) => setGuestName(e.target.value)}
+                            placeholder="Your full name"
+                            className="input"
+                            required
+                          />
+                        </Field>
+                        <Field label="Phone number" icon={Phone}>
+                          <input
+                            type="tel"
+                            value={guestPhone}
+                            onChange={(e) => setGuestPhone(e.target.value)}
+                            placeholder="+1 555 123 4567"
+                            className="input"
+                            required
+                          />
+                        </Field>
+                      </div>
+
+                      <Field label="Email address" icon={Mail}>
+                        <input
+                          type="email"
+                          value={guestEmail}
+                          onChange={(e) => setGuestEmail(e.target.value)}
+                          placeholder="you@example.com"
+                          className="input"
+                          required
+                        />
+                      </Field>
+
                       <div className="grid gap-4 sm:grid-cols-2">
                         <Field label="Check-in" icon={CalendarDays}>
                           <input
@@ -295,5 +393,3 @@ function Field({
     </label>
   );
 }
-
-
