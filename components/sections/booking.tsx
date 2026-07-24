@@ -6,6 +6,12 @@ import { CalendarDays, Users, BedDouble, Baby, Check, Sparkles, Mail, Phone, Use
 import { RESORT, ROOMS } from '@/lib/data';
 import { Reveal } from '@/components/motion';
 import { useToast } from '@/hooks/use-toast';
+import {
+  formatDualCurrency,
+  formatInr,
+  formatUsdFromInr,
+  USD_TO_INR,
+} from '@/lib/currency';
 
 function todayISO(offsetDays = 0) {
   const d = new Date();
@@ -52,8 +58,7 @@ export function BookingInner() {
       return;
     }
 
-    const booking = {
-      id: `AZ-${Date.now()}`,
+    const bookingRequest = {
       guestName,
       guestPhone,
       guestEmail,
@@ -65,25 +70,12 @@ export function BookingInner() {
       nights,
       requests,
       total,
-      createdAt: new Date().toISOString(),
     };
-
-    try {
-      const savedBookings = JSON.parse(
-        window.localStorage.getItem(BOOKINGS_STORAGE_KEY) || '[]',
-      );
-      window.localStorage.setItem(
-        BOOKINGS_STORAGE_KEY,
-        JSON.stringify([booking, ...savedBookings]),
-      );
-    } catch {
-      // Some embedded browsers can disable localStorage. The server save below still records it.
-    }
 
     const response = await fetch('/api/bookings', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(booking),
+      body: JSON.stringify(bookingRequest),
     });
 
     if (!response.ok) {
@@ -95,6 +87,20 @@ export function BookingInner() {
       return;
     }
 
+    const { booking } = await response.json();
+
+    try {
+      const savedBookings = JSON.parse(
+        window.localStorage.getItem(BOOKINGS_STORAGE_KEY) || '[]',
+      );
+      window.localStorage.setItem(
+        BOOKINGS_STORAGE_KEY,
+        JSON.stringify([booking, ...savedBookings]),
+      );
+    } catch {
+      // The SQLite database remains the source of truth if localStorage is unavailable.
+    }
+
     const message = [
       `New booking request for ${RESORT.fullName}`,
       `Booking ID: ${booking.id}`,
@@ -104,7 +110,7 @@ export function BookingInner() {
       `Stay: ${checkIn} to ${checkOut} (${nights} ${nights === 1 ? 'night' : 'nights'})`,
       `Guests: ${adults} adult${adults === 1 ? '' : 's'}, ${children} child${children === 1 ? '' : 'ren'}`,
       `Room: ${room.name}`,
-      `Estimated total: $${total.toLocaleString()}`,
+      `Estimated total: ${formatDualCurrency(total)}`,
       `Special requests: ${requests || 'None'}`,
     ].join('\n');
 
@@ -293,7 +299,7 @@ export function BookingInner() {
                         >
                           {ROOMS.map((r) => (
                             <option key={r.id} value={r.id}>
-                              {r.name} — ${r.price}/night
+                              {r.name} — {formatInr(r.price)} / {formatUsdFromInr(r.price)}
                             </option>
                           ))}
                         </select>
@@ -315,24 +321,30 @@ export function BookingInner() {
                           <span>
                             {room.name} × {nights} {nights === 1 ? 'night' : 'nights'}
                           </span>
-                          <span>${base.toLocaleString()}</span>
+                          <span className="text-right">{formatDualCurrency(base)}</span>
                         </div>
                         <div className="mt-1.5 flex items-center justify-between text-sm text-muted-foreground dark:text-white/70">
                           <span>Service charge (10%)</span>
-                          <span>${service.toLocaleString()}</span>
+                          <span className="text-right">{formatDualCurrency(service)}</span>
                         </div>
                         <div className="mt-1.5 flex items-center justify-between text-sm text-muted-foreground dark:text-white/70">
                           <span>Taxes (12%)</span>
-                          <span>${taxes.toLocaleString()}</span>
+                          <span className="text-right">{formatDualCurrency(taxes)}</span>
                         </div>
                         <div className="mt-3 flex items-center justify-between border-t border-ocean-100 pt-3 dark:border-white/10">
                           <span className="font-display text-lg font-semibold text-ocean-800 dark:text-white">
                             Estimated total
                           </span>
-                          <span className="font-display text-2xl font-bold text-teal-600 dark:text-teal-300">
-                            ${total.toLocaleString()}
+                          <span className="text-right font-display text-xl font-bold text-teal-600 dark:text-teal-300 sm:text-2xl">
+                            <span className="block">{formatInr(total)}</span>
+                            <span className="mt-0.5 block text-sm font-semibold text-muted-foreground dark:text-white/65">
+                              {formatUsdFromInr(total)}
+                            </span>
                           </span>
                         </div>
+                        <p className="mt-3 text-right text-[11px] text-muted-foreground dark:text-white/50">
+                          USD shown for reference at ₹{USD_TO_INR.toFixed(2)} per US$1.
+                        </p>
                       </div>
 
                       <button

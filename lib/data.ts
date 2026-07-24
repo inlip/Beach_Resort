@@ -56,7 +56,7 @@ export const ROOMS: Room[] = [
   {
     id: 'deluxe-ocean-view',
     name: 'Deluxe Ocean View',
-    price: 480,
+    price: 9999,
     capacity: '2 Guests',
     size: '52 m²',
     image:
@@ -67,7 +67,7 @@ export const ROOMS: Room[] = [
   {
     id: 'beach-villa',
     name: 'Beach Villa',
-    price: 720,
+    price: 14999,
     capacity: '2 Guests',
     size: '88 m²',
     image:
@@ -77,7 +77,7 @@ export const ROOMS: Room[] = [
   {
     id: 'pool-villa',
     name: 'Pool Villa',
-    price: 980,
+    price: 22999,
     capacity: '3 Guests',
     size: '120 m²',
     image:
@@ -88,7 +88,7 @@ export const ROOMS: Room[] = [
   {
     id: 'honeymoon-suite',
     name: 'Honeymoon Suite',
-    price: 1140,
+    price: 28999,
     capacity: '2 Guests',
     size: '145 m²',
     image:
@@ -98,7 +98,7 @@ export const ROOMS: Room[] = [
   {
     id: 'family-cottage',
     name: 'Family Cottage',
-    price: 860,
+    price: 19999,
     capacity: '4 Guests',
     size: '160 m²',
     image:
@@ -108,7 +108,7 @@ export const ROOMS: Room[] = [
   {
     id: 'presidential-villa',
     name: 'Presidential Villa',
-    price: 3200,
+    price: 49999,
     capacity: '6 Guests',
     size: '320 m²',
     image:

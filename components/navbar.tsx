@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion';
-import { Menu, X, Waves } from 'lucide-react';
+import { Menu, X, Flower2 } from 'lucide-react';
 import { NAV_LINKS, RESORT } from '@/lib/data';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { cn } from '@/lib/utils';
@@ -50,7 +50,7 @@ export function Navbar() {
                 scrolled ? 'bg-teal-400/20 text-teal-500' : 'bg-white/15 text-white'
               )}
             >
-              <Waves className="h-5 w-5" />
+              <Flower2 className="h-5 w-5" />
             </span>
             {RESORT.name}
           </Link>
@@ -82,7 +82,7 @@ export function Navbar() {
             />
             <Link
               href="#booking"
-              className="hidden rounded-full bg-gradient-to-r from-teal-400 to-ocean-500 px-6 py-2.5 text-sm font-semibold text-white shadow-luxe transition hover:shadow-lg hover:brightness-110 sm:inline-flex"
+              className="hidden rounded-full bg-gradient-to-r from-[#e4772d] to-[#b84522] px-6 py-2.5 text-sm font-semibold text-white shadow-luxe transition hover:shadow-lg hover:brightness-110 sm:inline-flex"
             >
               Book Now
             </Link>
@@ -155,7 +155,7 @@ export function Navbar() {
               <Link
                 href="#booking"
                 onClick={() => setOpen(false)}
-                className="mt-6 block rounded-full bg-gradient-to-r from-teal-400 to-ocean-500 px-6 py-3.5 text-center text-base font-semibold text-white shadow-luxe"
+                className="mt-6 block rounded-full bg-gradient-to-r from-[#e4772d] to-[#b84522] px-6 py-3.5 text-center text-base font-semibold text-white shadow-luxe"
               >
                 Book Your Stay
               </Link>

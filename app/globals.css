@@ -115,6 +115,13 @@
   .shadow-glass {
     box-shadow: 0 8px 32px -8px rgba(8, 51, 51, 0.25);
   }
+  .indian-hero-pattern {
+    background-image:
+      radial-gradient(circle at center, transparent 0 12px, rgba(255, 220, 160, 0.22) 13px 14px, transparent 15px),
+      conic-gradient(from 45deg at 50% 50%, transparent 0 12.5%, rgba(255, 208, 130, 0.12) 12.5% 25%, transparent 25% 37.5%, rgba(255, 208, 130, 0.12) 37.5% 50%, transparent 50% 62.5%, rgba(255, 208, 130, 0.12) 62.5% 75%, transparent 75% 87.5%, rgba(255, 208, 130, 0.12) 87.5% 100%);
+    background-size: 88px 88px;
+    mask-image: linear-gradient(to bottom, black, transparent 82%);
+  }
 }
 
 /* Custom scrollbar */
