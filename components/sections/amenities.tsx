@@ -8,7 +8,7 @@ export function Amenities() {
   return (
     <section
       id="amenities"
-      className="relative overflow-hidden bg-ocean-500 py-24 lg:py-32"
+      className="scroll-mt-24 relative overflow-hidden bg-ocean-500 py-24 lg:py-32"
     >
       {/* decorative palm pattern */}
       <div className="pointer-events-none absolute inset-0 opacity-[0.07]">
@@ -43,6 +43,10 @@ export function Amenities() {
               whileHover={{ y: -6 }}
               className="group rounded-2xl glass p-6 text-white transition hover:bg-white/20"
             >
+              <div className="relative mb-5 h-28 overflow-hidden rounded-xl">
+                <img src={a.image} alt={a.name} loading="eager" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+                <div className="absolute inset-0 bg-gradient-to-t from-ocean-900/50 to-transparent" />
+              </div>
               <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 text-teal-100 transition group-hover:bg-teal-300 group-hover:text-ocean-700">
                 <a.icon className="h-6 w-6" />
               </span>

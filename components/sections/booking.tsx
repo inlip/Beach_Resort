@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CalendarDays, Users, BedDouble, Baby, Check, Sparkles, Mail, Phone, User } from 'lucide-react';
-import { RESORT, ROOMS } from '@/lib/data';
+import { RESORT, ROOMS, formatPrice } from '@/lib/data';
 import { Reveal } from '@/components/motion';
 import { useToast } from '@/hooks/use-toast';
 
@@ -33,6 +33,7 @@ export function BookingInner() {
   const [roomId, setRoomId] = React.useState(ROOMS[0].id);
   const [requests, setRequests] = React.useState('');
   const [confirmed, setConfirmed] = React.useState(false);
+  const [customerWhatsappHref, setCustomerWhatsappHref] = React.useState('');
 
   const room = ROOMS.find((r) => r.id === roomId)!;
   const nights = nightsBetween(checkIn, checkOut);
@@ -104,12 +105,16 @@ export function BookingInner() {
       `Stay: ${checkIn} to ${checkOut} (${nights} ${nights === 1 ? 'night' : 'nights'})`,
       `Guests: ${adults} adult${adults === 1 ? '' : 's'}, ${children} child${children === 1 ? '' : 'ren'}`,
       `Room: ${room.name}`,
-      `Estimated total: $${total.toLocaleString()}`,
+      `Estimated total: ${formatPrice(total)}`,
       `Special requests: ${requests || 'None'}`,
     ].join('\n');
 
-    window.open(`${RESORT.whatsappHref}?text=${encodeURIComponent(message)}`, '_blank');
+    const emailSubject = `New Azurea booking request — ${booking.id}`;
+    window.location.href = `mailto:${RESORT.email}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(message)}`;
 
+    const digits = guestPhone.replace(/\D/g, '');
+    const customerNumber = digits.length === 10 ? `91${digits}` : digits;
+    setCustomerWhatsappHref(`https://wa.me/${customerNumber}?text=${encodeURIComponent(`Hello ${guestName}, this is Azurea Oceanfront Resort regarding your booking request ${booking.id}.`)}`);
     setConfirmed(true);
     toast({
       title: 'Reservation saved',
@@ -184,6 +189,16 @@ export function BookingInner() {
                         Thank you. Our concierge team will email a confirmation for your{' '}
                         <strong>{room.name}</strong> within 24 hours.
                       </p>
+                      {customerWhatsappHref && (
+                        <a
+                          href={customerWhatsappHref}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="mt-5 rounded-full bg-[#25D366] px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1ebe5d]"
+                        >
+                          Chat with guest on WhatsApp
+                        </a>
+                      )}
                       <button
                         onClick={() => setConfirmed(false)}
                         className="mt-6 rounded-full bg-ocean-500 px-6 py-2.5 text-sm font-semibold text-white hover:bg-ocean-600"
@@ -293,7 +308,7 @@ export function BookingInner() {
                         >
                           {ROOMS.map((r) => (
                             <option key={r.id} value={r.id}>
-                              {r.name} — ${r.price}/night
+                              {r.name} — {formatPrice(r.price)}/night
                             </option>
                           ))}
                         </select>
@@ -315,22 +330,22 @@ export function BookingInner() {
                           <span>
                             {room.name} × {nights} {nights === 1 ? 'night' : 'nights'}
                           </span>
-                          <span>${base.toLocaleString()}</span>
+                          <span>{formatPrice(base)}</span>
                         </div>
                         <div className="mt-1.5 flex items-center justify-between text-sm text-muted-foreground dark:text-white/70">
                           <span>Service charge (10%)</span>
-                          <span>${service.toLocaleString()}</span>
+                          <span>{formatPrice(service)}</span>
                         </div>
                         <div className="mt-1.5 flex items-center justify-between text-sm text-muted-foreground dark:text-white/70">
                           <span>Taxes (12%)</span>
-                          <span>${taxes.toLocaleString()}</span>
+                          <span>{formatPrice(taxes)}</span>
                         </div>
                         <div className="mt-3 flex items-center justify-between border-t border-ocean-100 pt-3 dark:border-white/10">
                           <span className="font-display text-lg font-semibold text-ocean-800 dark:text-white">
                             Estimated total
                           </span>
                           <span className="font-display text-2xl font-bold text-teal-600 dark:text-teal-300">
-                            ${total.toLocaleString()}
+                            {formatPrice(total)}
                           </span>
                         </div>
                       </div>
