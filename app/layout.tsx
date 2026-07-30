@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     description,
     images: [
       {
-        url: 'https://images.pexels.com/photos/1455861/pexels-photo-1455861.jpeg?auto=compress&cs=tinysrgb&w=1200',
+        url: 'https://images.unsplash.com/photo-1449844908441-8829872d2607?auto=format&fit=crop&w=1200&q=85',
         width: 1200,
         height: 630,
         alt: 'Azurea Oceanfront Resort',
@@ -64,7 +64,7 @@ export const metadata: Metadata = {
     title,
     description,
     images: [
-      'https://images.pexels.com/photos/1455861/pexels-photo-1455861.jpeg?auto=compress&cs=tinysrgb&w=1200',
+      'https://images.unsplash.com/photo-1449844908441-8829872d2607?auto=format&fit=crop&w=1200&q=85',
     ],
   },
   icons: {
@@ -83,7 +83,7 @@ const hotelSchema = {
   description,
   url: SITE_URL,
   image:
-    'https://images.pexels.com/photos/1455861/pexels-photo-1455861.jpeg?auto=compress&cs=tinysrgb&w=1200',
+    'https://images.unsplash.com/photo-1449844908441-8829872d2607?auto=format&fit=crop&w=1200&q=85',
   starRating: { '@type': 'Rating', ratingValue: '5' },
   priceRange: '$$$',
   address: {

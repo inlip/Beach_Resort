@@ -20,6 +20,8 @@ function nightsBetween(a: string, b: string) {
 }
 
 const BOOKINGS_STORAGE_KEY = 'azurea-bookings';
+const formatINR = (amount: number) =>
+  new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount);
 
 export function BookingInner() {
   const { toast } = useToast();
@@ -41,8 +43,24 @@ export function BookingInner() {
   const taxes = Math.round(base * 0.12);
   const total = base + service + taxes;
 
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const PHONE_RE = /^[+()\-\s\d]{6,20}$/;
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!guestName.trim() || guestName.trim().length < 2) {
+      toast({ title: 'Please enter your full name', variant: 'destructive' });
+      return;
+    }
+    if (!PHONE_RE.test(guestPhone)) {
+      toast({ title: 'Please enter a valid phone number', variant: 'destructive' });
+      return;
+    }
+    if (!EMAIL_RE.test(guestEmail)) {
+      toast({ title: 'Please enter a valid email address', variant: 'destructive' });
+      return;
+    }
     if (nights < 1) {
       toast({
         title: 'Please choose valid dates',
@@ -52,21 +70,50 @@ export function BookingInner() {
       return;
     }
 
-    const booking = {
-      id: `AZ-${Date.now()}`,
-      guestName,
-      guestPhone,
-      guestEmail,
+    // Payload sent to the server. Note: total/nights are NOT sent as
+    // trusted values — the API route recomputes them from roomId +
+    // dates so a tampered client request can't change the price.
+    const payload = {
+      guestName: guestName.trim(),
+      guestPhone: guestPhone.trim(),
+      guestEmail: guestEmail.trim(),
       checkIn,
       checkOut,
       adults,
       children,
-      room: room.name,
-      nights,
-      requests,
-      total,
-      createdAt: new Date().toISOString(),
+      roomId: room.id,
+      requests: requests.trim(),
     };
+
+    let response: Response;
+    try {
+      response = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+    } catch {
+      toast({
+        title: 'Network error',
+        description: 'Could not reach the server. Please check your connection and try again.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const result = await response.json().catch(() => null);
+
+    if (!response.ok || !result?.ok) {
+      const description =
+        result?.error ??
+        (response.status === 429
+          ? 'Too many attempts — please wait a minute and try again.'
+          : 'Please check your details and try again.');
+      toast({ title: 'Could not save booking', description, variant: 'destructive' });
+      return;
+    }
+
+    const booking = result.booking;
 
     try {
       const savedBookings = JSON.parse(
@@ -77,22 +124,7 @@ export function BookingInner() {
         JSON.stringify([booking, ...savedBookings]),
       );
     } catch {
-      // Some embedded browsers can disable localStorage. The server save below still records it.
-    }
-
-    const response = await fetch('/api/bookings', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(booking),
-    });
-
-    if (!response.ok) {
-      toast({
-        title: 'Could not save booking',
-        description: 'Please try again before sending the WhatsApp request.',
-        variant: 'destructive',
-      });
-      return;
+      // Some embedded browsers can disable localStorage; the server save above still records it.
     }
 
     const message = [
@@ -104,7 +136,7 @@ export function BookingInner() {
       `Stay: ${checkIn} to ${checkOut} (${nights} ${nights === 1 ? 'night' : 'nights'})`,
       `Guests: ${adults} adult${adults === 1 ? '' : 's'}, ${children} child${children === 1 ? '' : 'ren'}`,
       `Room: ${room.name}`,
-      `Estimated total: $${total.toLocaleString()}`,
+      `Estimated total: ${formatINR(Number(booking.total ?? total))}`,
       `Special requests: ${requests || 'None'}`,
     ].join('\n');
 
@@ -293,7 +325,7 @@ export function BookingInner() {
                         >
                           {ROOMS.map((r) => (
                             <option key={r.id} value={r.id}>
-                              {r.name} — ${r.price}/night
+                              {r.name} — {formatINR(r.price)}/night
                             </option>
                           ))}
                         </select>
@@ -315,22 +347,22 @@ export function BookingInner() {
                           <span>
                             {room.name} × {nights} {nights === 1 ? 'night' : 'nights'}
                           </span>
-                          <span>${base.toLocaleString()}</span>
+                            <span>{formatINR(base)}</span>
                         </div>
                         <div className="mt-1.5 flex items-center justify-between text-sm text-muted-foreground dark:text-white/70">
                           <span>Service charge (10%)</span>
-                          <span>${service.toLocaleString()}</span>
+                          <span>{formatINR(service)}</span>
                         </div>
                         <div className="mt-1.5 flex items-center justify-between text-sm text-muted-foreground dark:text-white/70">
                           <span>Taxes (12%)</span>
-                          <span>${taxes.toLocaleString()}</span>
+                          <span>{formatINR(taxes)}</span>
                         </div>
                         <div className="mt-3 flex items-center justify-between border-t border-ocean-100 pt-3 dark:border-white/10">
                           <span className="font-display text-lg font-semibold text-ocean-800 dark:text-white">
                             Estimated total
                           </span>
                           <span className="font-display text-2xl font-bold text-teal-600 dark:text-teal-300">
-                            ${total.toLocaleString()}
+                            {formatINR(total)}
                           </span>
                         </div>
                       </div>

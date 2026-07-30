@@ -7,7 +7,7 @@ import { ChevronDown, Calendar, Compass } from 'lucide-react';
 const VIDEO_SRC =
   'https://cdn.coverr.co/videos/coverr-aerial-view-of-the-beach-1080p.mp4';
 const VIDEO_FALLBACK =
-  'https://images.pexels.com/photos/1450363/pexels-photo-1450363.jpeg?auto=compress&cs=tinysrgb&w=1920';
+  'https://images.unsplash.com/photo-1449844908441-8829872d2607?auto=format&fit=crop&w=1920&q=85';
 
 export function Hero() {
   return (

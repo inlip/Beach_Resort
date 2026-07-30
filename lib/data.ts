@@ -56,63 +56,63 @@ export const ROOMS: Room[] = [
   {
     id: 'deluxe-ocean-view',
     name: 'Deluxe Ocean View',
-    price: 480,
+    price: 7999,
     capacity: '2 Guests',
     size: '52 m²',
     image:
-      'https://images.pexels.com/photos/2029698/pexels-photo-2029698.jpeg?auto=compress&cs=tinysrgb&w=1200',
+      'https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&w=1200&q=85',
     amenities: ['King bed', 'Ocean balcony', 'Rain shower', 'Smart TV'],
     tag: 'Most Popular',
   },
   {
     id: 'beach-villa',
     name: 'Beach Villa',
-    price: 720,
+    price: 12999,
     capacity: '2 Guests',
     size: '88 m²',
     image:
-      'https://images.pexels.com/photos/2467558/pexels-photo-2467558.jpeg?auto=compress&cs=tinysrgb&w=1200',
+      'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=1200&q=85',
     amenities: ['Private deck', 'Beach access', 'Outdoor bath', 'Lounge area'],
   },
   {
     id: 'pool-villa',
     name: 'Pool Villa',
-    price: 980,
+    price: 18999,
     capacity: '3 Guests',
     size: '120 m²',
     image:
-      'https://images.pexels.com/photos/261101/pexels-photo-261101.jpeg?auto=compress&cs=tinysrgb&w=1200',
+      'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1200&q=85',
     amenities: ['Private pool', 'Sun deck', 'Cabana', 'Butler service'],
     tag: 'Guest Favourite',
   },
   {
     id: 'honeymoon-suite',
     name: 'Honeymoon Suite',
-    price: 1140,
+    price: 22999,
     capacity: '2 Guests',
     size: '145 m²',
     image:
-      'https://images.pexels.com/photos/1579739/pexels-photo-1579739.jpeg?auto=compress&cs=tinysrgb&w=1200',
+      'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=85',
     amenities: ['Plunge pool', 'Romance setup', 'Champagne', 'Spa bath'],
   },
   {
     id: 'family-cottage',
     name: 'Family Cottage',
-    price: 860,
+    price: 29999,
     capacity: '4 Guests',
     size: '160 m²',
     image:
-      'https://images.pexels.com/photos/2029722/pexels-photo-2029722.jpeg?auto=compress&cs=tinysrgb&w=1200',
+      'https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=1200&q=85',
     amenities: ['Two bedrooms', 'Kids loft', 'Kitchenette', 'Garden view'],
   },
   {
     id: 'presidential-villa',
     name: 'Presidential Villa',
-    price: 3200,
+    price: 39999,
     capacity: '6 Guests',
     size: '320 m²',
     image:
-      'https://images.pexels.com/photos/802024/pexels-photo-802024.jpeg?auto=compress&cs=tinysrgb&w=1200',
+      'https://images.unsplash.com/photo-1595576508898-0ad5c879a1f8?auto=format&fit=crop&w=1200&q=85',
     amenities: ['Infinity pool', 'Private chef', 'Helipad access', 'Cinema room'],
     tag: 'Signature',
   },
@@ -215,7 +215,7 @@ export const DINING: Dining[] = [
     cuisine: 'Seafood Restaurant',
     desc: 'Catch-of-the-day tasting menus by our Michelin-trained chef, served over the lagoon.',
     image:
-      'https://images.pexels.com/photos/1583884/pexels-photo-1583884.jpeg?auto=compress&cs=tinysrgb&w=1200',
+      'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=1200&q=85',
     hours: '6:00 PM – 11:00 PM',
   },
   {
@@ -223,7 +223,7 @@ export const DINING: Dining[] = [
     cuisine: 'Rooftop Bar',
     desc: 'Panoramic ocean views, handcrafted cocktails and a DJ set as the sun goes down.',
     image:
-      'https://images.pexels.com/photos/3013920/pexels-photo-3013920.jpeg?auto=compress&cs=tinysrgb&w=1200',
+      'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=85',
     hours: '5:00 PM – 1:00 AM',
   },
   {
@@ -231,7 +231,7 @@ export const DINING: Dining[] = [
     cuisine: 'Beach Café',
     desc: 'All-day barefoot dining — wood-fired flatbreads, tropical bowls and cold-pressed juices.',
     image:
-      'https://images.pexels.com/photos/958545/pexels-photo-958545.jpeg?auto=compress&cs=tinysrgb&w=1200',
+      'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=1200&q=85',
     hours: '7:00 AM – 11:00 PM',
   },
   {
@@ -239,24 +239,24 @@ export const DINING: Dining[] = [
     cuisine: 'Private Dining',
     desc: 'Bespoke menus curated for two, served in a private pavilion on the water.',
     image:
-      'https://images.pexels.com/photos/2620417/pexels-photo-2620417.jpeg?auto=compress&cs=tinysrgb&w=1200',
+      'https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=1200&q=85',
     hours: 'By reservation',
   },
 ];
 
 export const GALLERY: string[] = [
-  'https://images.pexels.com/photos/1450363/pexels-photo-1450363.jpeg?auto=compress&cs=tinysrgb&w=900',
-  'https://images.pexels.com/photos/2467558/pexels-photo-2467558.jpeg?auto=compress&cs=tinysrgb&w=900',
-  'https://images.pexels.com/photos/261101/pexels-photo-261101.jpeg?auto=compress&cs=tinysrgb&w=900',
-  'https://images.pexels.com/photos/3601425/pexels-photo-3601425.jpeg?auto=compress&cs=tinysrgb&w=900',
-  'https://images.pexels.com/photos/3046597/pexels-photo-3046597.jpeg?auto=compress&cs=tinysrgb&w=900',
-  'https://images.pexels.com/photos/1579739/pexels-photo-1579739.jpeg?auto=compress&cs=tinysrgb&w=900',
-  'https://images.pexels.com/photos/802024/pexels-photo-802024.jpeg?auto=compress&cs=tinysrgb&w=900',
-  'https://images.pexels.com/photos/2629786/pexels-photo-2629786.jpeg?auto=compress&cs=tinysrgb&w=900',
-  'https://images.pexels.com/photos/1455861/pexels-photo-1455861.jpeg?auto=compress&cs=tinysrgb&w=900',
-  'https://images.pexels.com/photos/3601456/pexels-photo-3601456.jpeg?auto=compress&cs=tinysrgb&w=900',
-  'https://images.pexels.com/photos/2637682/pexels-photo-2637682.jpeg?auto=compress&cs=tinysrgb&w=900',
-  'https://images.pexels.com/photos/6202966/pexels-photo-6202966.jpeg?auto=compress&cs=tinysrgb&w=900',
+  'https://images.unsplash.com/photo-1449844908441-8829872d2607?auto=format&fit=crop&w=900&q=85',
+  'https://images.unsplash.com/photo-1449844908441-8829872d2607?auto=format&fit=crop&w=900&q=85',
+  'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=900&q=85',
+  'https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=900&q=85',
+  'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=900&q=85',
+  'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=900&q=85',
+  'https://images.unsplash.com/photo-1601918774946-25832a4be0d6?auto=format&fit=crop&w=900&q=85',
+  'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=900&q=85',
+  'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?auto=format&fit=crop&w=900&q=85',
+  'https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=900&q=85',
+  'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=900&q=85',
+  'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=900&q=85',
 ];
 
 export type Testimonial = {
