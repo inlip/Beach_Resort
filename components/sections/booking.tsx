@@ -127,25 +127,10 @@ export function BookingInner() {
       // Some embedded browsers can disable localStorage; the server save above still records it.
     }
 
-    const message = [
-      `New booking request for ${RESORT.fullName}`,
-      `Booking ID: ${booking.id}`,
-      `Guest: ${guestName}`,
-      `Phone: ${guestPhone}`,
-      `Email: ${guestEmail}`,
-      `Stay: ${checkIn} to ${checkOut} (${nights} ${nights === 1 ? 'night' : 'nights'})`,
-      `Guests: ${adults} adult${adults === 1 ? '' : 's'}, ${children} child${children === 1 ? '' : 'ren'}`,
-      `Room: ${room.name}`,
-      `Estimated total: ${formatINR(Number(booking.total ?? total))}`,
-      `Special requests: ${requests || 'None'}`,
-    ].join('\n');
-
-    window.open(`${RESORT.whatsappHref}?text=${encodeURIComponent(message)}`, '_blank');
-
     setConfirmed(true);
     toast({
       title: 'Reservation saved',
-      description: 'Your booking details were stored and WhatsApp is ready to send.',
+      description: 'Your booking details were saved and sent to our concierge by email.',
     });
   };
 

@@ -17,7 +17,7 @@ export function Dining() {
           </Reveal>
           <Reveal delay={0.1}>
             <h2 className="mt-5 font-display text-4xl font-semibold leading-tight text-ocean-800 dark:text-white sm:text-5xl">
-              A journey of the senses
+              India on every plate
             </h2>
           </Reveal>
           <Reveal delay={0.2}>

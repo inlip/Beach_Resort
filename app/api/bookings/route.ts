@@ -4,6 +4,7 @@ import crypto from 'crypto';
 import { NextResponse } from 'next/server';
 import { ROOMS } from '@/lib/data';
 import { bookingInputSchema } from '@/lib/booking-schema';
+import { getMailer, mailConfig } from '@/lib/mailer';
 
 const bookingsFile = path.join(process.cwd(), 'data', 'bookings.json');
 
@@ -127,6 +128,18 @@ export async function POST(request: Request) {
       { ok: false, error: 'Could not save booking. Please try again.' },
       { status: 500 },
     );
+  }
+
+  try {
+    const config = mailConfig();
+    await getMailer().sendMail({
+      ...config,
+      replyTo: booking.guestEmail,
+      subject: `New booking request ${booking.id}`,
+      text: `Guest: ${booking.guestName}\nEmail: ${booking.guestEmail}\nPhone: ${booking.guestPhone}\nRoom: ${booking.room}\nStay: ${booking.checkIn} to ${booking.checkOut}\nGuests: ${booking.adults} adults, ${booking.children} children\nTotal: ${booking.total}\nRequests: ${booking.requests || 'None'}`,
+    });
+  } catch (err) {
+    console.error('Booking email failed', err);
   }
 
   return NextResponse.json({ ok: true, booking });

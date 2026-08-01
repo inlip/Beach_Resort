@@ -23,7 +23,7 @@ export const RESORT = {
   whatsapp: '+9609990000',
   whatsappHref: 'https://wa.me/9609990000',
   email: 'stay@azurea-resort.example.com',
-  address: '1 Lagoon Crescent, Paradise Atoll, Paradise Island',
+  address: '1 Coconut Grove, Candolim, Goa, India',
   instagram: 'https://instagram.com',
   facebook: 'https://facebook.com',
   twitter: 'https://twitter.com',
@@ -33,6 +33,7 @@ export const RESORT = {
 export const NAV_LINKS = [
   { label: 'Home', href: '#home' },
   { label: 'Rooms & Villas', href: '#rooms' },
+  { label: 'Amenities', href: '#amenities' },
   { label: 'Dining', href: '#dining' },
   { label: 'Experiences', href: '#experiences' },
   { label: 'Gallery', href: '#gallery' },
@@ -56,63 +57,63 @@ export const ROOMS: Room[] = [
   {
     id: 'deluxe-ocean-view',
     name: 'Deluxe Ocean View',
-    price: 7999,
+    price: 125,
     capacity: '2 Guests',
     size: '52 m²',
     image:
-      'https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&w=1200&q=85',
+      'https://images.pexels.com/photos/2029698/pexels-photo-2029698.jpeg?auto=compress&cs=tinysrgb&w=1200',
     amenities: ['King bed', 'Ocean balcony', 'Rain shower', 'Smart TV'],
     tag: 'Most Popular',
   },
   {
     id: 'beach-villa',
     name: 'Beach Villa',
-    price: 12999,
+    price: 200,
     capacity: '2 Guests',
     size: '88 m²',
     image:
-      'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=1200&q=85',
+      'https://images.pexels.com/photos/2467558/pexels-photo-2467558.jpeg?auto=compress&cs=tinysrgb&w=1200',
     amenities: ['Private deck', 'Beach access', 'Outdoor bath', 'Lounge area'],
   },
   {
     id: 'pool-villa',
     name: 'Pool Villa',
-    price: 18999,
+    price: 275,
     capacity: '3 Guests',
     size: '120 m²',
     image:
-      'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1200&q=85',
+      'https://images.pexels.com/photos/261101/pexels-photo-261101.jpeg?auto=compress&cs=tinysrgb&w=1200',
     amenities: ['Private pool', 'Sun deck', 'Cabana', 'Butler service'],
     tag: 'Guest Favourite',
   },
   {
     id: 'honeymoon-suite',
     name: 'Honeymoon Suite',
-    price: 22999,
+    price: 350,
     capacity: '2 Guests',
     size: '145 m²',
     image:
-      'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=85',
+      'https://images.pexels.com/photos/1579739/pexels-photo-1579739.jpeg?auto=compress&cs=tinysrgb&w=1200',
     amenities: ['Plunge pool', 'Romance setup', 'Champagne', 'Spa bath'],
   },
   {
     id: 'family-cottage',
     name: 'Family Cottage',
-    price: 29999,
+    price: 400,
     capacity: '4 Guests',
     size: '160 m²',
     image:
-      'https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=1200&q=85',
+      'https://images.pexels.com/photos/2029722/pexels-photo-2029722.jpeg?auto=compress&cs=tinysrgb&w=1200',
     amenities: ['Two bedrooms', 'Kids loft', 'Kitchenette', 'Garden view'],
   },
   {
     id: 'presidential-villa',
     name: 'Presidential Villa',
-    price: 39999,
+    price: 480,
     capacity: '6 Guests',
     size: '320 m²',
     image:
-      'https://images.unsplash.com/photo-1595576508898-0ad5c879a1f8?auto=format&fit=crop&w=1200&q=85',
+      'https://images.pexels.com/photos/802024/pexels-photo-802024.jpeg?auto=compress&cs=tinysrgb&w=1200',
     amenities: ['Infinity pool', 'Private chef', 'Helipad access', 'Cinema room'],
     tag: 'Signature',
   },
@@ -120,19 +121,28 @@ export const ROOMS: Room[] = [
 
 export type Amenity = { icon: LucideIcon; name: string; desc: string };
 
-export const AMENITIES: Amenity[] = [
-  { icon: Waves, name: 'Infinity Pool', desc: 'Horizon-edge pool overlooking the lagoon' },
-  { icon: Flower2, name: 'Spa & Wellness', desc: 'Balinese-inspired overwater spa' },
-  { icon: UtensilsCrossed, name: 'Fine Dining', desc: 'Three signature restaurants' },
-  { icon: Wine, name: 'Beach Bar', desc: 'Sunset cocktails on the sand' },
-  { icon: Wifi, name: 'High-Speed WiFi', desc: 'Complimentary across the resort' },
-  { icon: Plane, name: 'Airport Transfer', desc: 'Speedboat or seaplane arrival' },
-  { icon: Dumbbell, name: '24/7 Gym', desc: 'Ocean-view fitness pavilion' },
-  { icon: Baby, name: 'Kids Zone', desc: 'Supervised club for ages 4–12' },
-  { icon: Sailboat, name: 'Water Sports', desc: 'Diving, kayaking, paddleboarding' },
-  { icon: Sparkles, name: 'Yoga Deck', desc: 'Sunrise flow over the ocean' },
-  { icon: Building2, name: 'Conference Hall', desc: 'Events for up to 200 guests' },
-  { icon: Clapperboard, name: 'Outdoor Cinema', desc: 'Movies under the stars' },
+export const USD_TO_INR = 83;
+
+export function formatPrice(usd: number) {
+  const inr = Math.round(usd * USD_TO_INR);
+  return `₹${inr.toLocaleString('en-IN')} / $${usd.toLocaleString('en-US')}`;
+}
+
+export type AmenityWithImage = Amenity & { image: string };
+
+export const AMENITIES: AmenityWithImage[] = [
+  { icon: Waves, name: 'Infinity Pool', desc: 'Horizon-edge pool overlooking the lagoon', image: 'https://images.unsplash.com/photo-1572331165267-854da2b10ccc?auto=format&fit=crop&w=900&q=80' },
+  { icon: Flower2, name: 'Spa & Wellness', desc: 'Balinese-inspired overwater spa', image: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=900&q=80' },
+  { icon: UtensilsCrossed, name: 'Fine Dining', desc: 'Three signature restaurants', image: 'https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?auto=format&fit=crop&w=900&q=80' },
+  { icon: Wine, name: 'Beach Bar', desc: 'Sunset cocktails on the sand', image: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=900&q=80' },
+  { icon: Wifi, name: 'High-Speed WiFi', desc: 'Complimentary across the resort', image: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=900&q=80' },
+  { icon: Plane, name: 'Airport Transfer', desc: 'Speedboat or seaplane arrival', image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=900&q=80' },
+  { icon: Dumbbell, name: '24/7 Gym', desc: 'Ocean-view fitness pavilion', image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=900&q=80' },
+  { icon: Baby, name: 'Kids Zone', desc: 'Supervised club for ages 4–12', image: 'https://images.unsplash.com/photo-1596464716127-f2a82984de30?auto=format&fit=crop&w=900&q=80' },
+  { icon: Sailboat, name: 'Water Sports', desc: 'Diving, kayaking, paddleboarding', image: 'https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c?auto=format&fit=crop&w=900&q=80' },
+  { icon: Sparkles, name: 'Yoga Deck', desc: 'Sunrise flow over the ocean', image: 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?auto=format&fit=crop&w=900&q=80' },
+  { icon: Building2, name: 'Conference Hall', desc: 'Events for up to 200 guests', image: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&w=900&q=80' },
+  { icon: Clapperboard, name: 'Outdoor Cinema', desc: 'Movies under the stars', image: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=900&q=80' },
 ];
 
 export type Experience = {
@@ -212,18 +222,18 @@ export type Dining = {
 export const DINING: Dining[] = [
   {
     name: 'Oceana',
-    cuisine: 'Seafood Restaurant',
-    desc: 'Catch-of-the-day tasting menus by our Michelin-trained chef, served over the lagoon.',
+    cuisine: 'Coastal Indian Restaurant',
+    desc: 'Goan seafood, Malabar curries and tandoori delicacies served with a sunset view.',
     image:
-      'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=1200&q=85',
+      'https://images.pexels.com/photos/1583884/pexels-photo-1583884.jpeg?auto=compress&cs=tinysrgb&w=1200',
     hours: '6:00 PM – 11:00 PM',
   },
   {
     name: 'Skybar',
-    cuisine: 'Rooftop Bar',
-    desc: 'Panoramic ocean views, handcrafted cocktails and a DJ set as the sun goes down.',
+    cuisine: 'Indian Cocktail Lounge',
+    desc: 'Small-batch feni, masala-inspired cocktails and Indian bar bites above the coast.',
     image:
-      'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=85',
+      'https://images.pexels.com/photos/3013920/pexels-photo-3013920.jpeg?auto=compress&cs=tinysrgb&w=1200',
     hours: '5:00 PM – 1:00 AM',
   },
   {
@@ -231,32 +241,32 @@ export const DINING: Dining[] = [
     cuisine: 'Beach Café',
     desc: 'All-day barefoot dining — wood-fired flatbreads, tropical bowls and cold-pressed juices.',
     image:
-      'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=1200&q=85',
+      'https://images.pexels.com/photos/958545/pexels-photo-958545.jpeg?auto=compress&cs=tinysrgb&w=1200',
     hours: '7:00 AM – 11:00 PM',
   },
   {
     name: 'The Lantern',
-    cuisine: 'Private Dining',
-    desc: 'Bespoke menus curated for two, served in a private pavilion on the water.',
+    cuisine: 'Royal Indian Private Dining',
+    desc: 'A bespoke Awadhi or Rajasthani feast for two, served in a candlelit pavilion by the sea.',
     image:
-      'https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=1200&q=85',
+      'https://images.pexels.com/photos/2620417/pexels-photo-2620417.jpeg?auto=compress&cs=tinysrgb&w=1200',
     hours: 'By reservation',
   },
 ];
 
 export const GALLERY: string[] = [
-  'https://images.unsplash.com/photo-1449844908441-8829872d2607?auto=format&fit=crop&w=900&q=85',
-  'https://images.unsplash.com/photo-1449844908441-8829872d2607?auto=format&fit=crop&w=900&q=85',
-  'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=900&q=85',
-  'https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=900&q=85',
-  'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=900&q=85',
-  'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=900&q=85',
-  'https://images.unsplash.com/photo-1601918774946-25832a4be0d6?auto=format&fit=crop&w=900&q=85',
-  'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=900&q=85',
-  'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?auto=format&fit=crop&w=900&q=85',
-  'https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=900&q=85',
-  'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=900&q=85',
-  'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=900&q=85',
+  'https://images.pexels.com/photos/1450363/pexels-photo-1450363.jpeg?auto=compress&cs=tinysrgb&w=900',
+  'https://images.pexels.com/photos/2467558/pexels-photo-2467558.jpeg?auto=compress&cs=tinysrgb&w=900',
+  'https://images.pexels.com/photos/261101/pexels-photo-261101.jpeg?auto=compress&cs=tinysrgb&w=900',
+  'https://images.pexels.com/photos/3601425/pexels-photo-3601425.jpeg?auto=compress&cs=tinysrgb&w=900',
+  'https://images.pexels.com/photos/3046597/pexels-photo-3046597.jpeg?auto=compress&cs=tinysrgb&w=900',
+  'https://images.pexels.com/photos/1579739/pexels-photo-1579739.jpeg?auto=compress&cs=tinysrgb&w=900',
+  'https://images.pexels.com/photos/802024/pexels-photo-802024.jpeg?auto=compress&cs=tinysrgb&w=900',
+  'https://images.pexels.com/photos/2629786/pexels-photo-2629786.jpeg?auto=compress&cs=tinysrgb&w=900',
+  'https://images.pexels.com/photos/1455861/pexels-photo-1455861.jpeg?auto=compress&cs=tinysrgb&w=900',
+  'https://images.pexels.com/photos/3601456/pexels-photo-3601456.jpeg?auto=compress&cs=tinysrgb&w=900',
+  'https://images.pexels.com/photos/2637682/pexels-photo-2637682.jpeg?auto=compress&cs=tinysrgb&w=900',
+  'https://images.pexels.com/photos/6202966/pexels-photo-6202966.jpeg?auto=compress&cs=tinysrgb&w=900',
 ];
 
 export type Testimonial = {
@@ -345,7 +355,7 @@ export const OFFERS: Offer[] = [
   },
   {
     title: 'Summer Escape',
-    desc: 'Up to 25% off villas, complimentary seaplane transfer and a $100 resort credit per day. Valid May – September.',
+    desc: 'Up to 25% off villas, complimentary seaplane transfer and a ₹8,300 / $100 resort credit per day. Valid May – September.',
     badge: 'Limited Time',
     image:
       'https://images.pexels.com/photos/3601425/pexels-photo-3601425.jpeg?auto=compress&cs=tinysrgb&w=1000',

@@ -7,7 +7,7 @@ import { ChevronDown, Calendar, Compass } from 'lucide-react';
 const VIDEO_SRC =
   'https://cdn.coverr.co/videos/coverr-aerial-view-of-the-beach-1080p.mp4';
 const VIDEO_FALLBACK =
-  'https://images.unsplash.com/photo-1449844908441-8829872d2607?auto=format&fit=crop&w=1920&q=85';
+  'https://images.pexels.com/photos/1450363/pexels-photo-1450363.jpeg?auto=compress&cs=tinysrgb&w=1920';
 
 export function Hero() {
   return (
@@ -46,7 +46,7 @@ export function Hero() {
           transition={{ duration: 0.9, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
           className="font-display text-5xl font-semibold leading-[1.05] text-white drop-shadow-[0_2px_30px_rgba(0,0,0,0.45)] sm:text-6xl md:text-7xl lg:text-8xl"
         >
-          Escape to Paradise
+          India&apos;s Coastal Sanctuary
         </motion.h1>
 
         <motion.p

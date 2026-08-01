@@ -11,8 +11,17 @@ export function Contact() {
   const { toast } = useToast();
   const [form, setForm] = React.useState({ name: '', email: '', message: '' });
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const response = await fetch('/api/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(form),
+    });
+    if (!response.ok) {
+      toast({ title: 'Message could not be sent', description: 'Please try again later.', variant: 'destructive' });
+      return;
+    }
     toast({
       title: 'Message sent',
       description: 'Our concierge will respond within 24 hours.',

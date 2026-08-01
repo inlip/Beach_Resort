@@ -25,7 +25,7 @@ export function About() {
             <div className="relative">
               <div className="overflow-hidden rounded-[2rem] shadow-luxe">
                 <img
-                  src="https://images.unsplash.com/photo-1449844908441-8829872d2607?auto=format&fit=crop&w=1100&q=85"
+                  src="https://images.pexels.com/photos/1455861/pexels-photo-1455861.jpeg?auto=compress&cs=tinysrgb&w=1100"
                   alt="Azurea Oceanfront Resort aerial view"
                   loading="lazy"
                   className="aspect-[4/5] w-full object-cover"
@@ -33,7 +33,7 @@ export function About() {
               </div>
               <div className="absolute -bottom-8 -right-4 hidden w-56 overflow-hidden rounded-2xl border-4 border-white shadow-xl sm:block dark:border-ocean-800">
                 <img
-                  src="https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=600&q=85"
+                  src="https://images.pexels.com/photos/261101/pexels-photo-261101.jpeg?auto=compress&cs=tinysrgb&w=600"
                   alt="Infinity pool"
                   loading="lazy"
                   className="aspect-square w-full object-cover"
