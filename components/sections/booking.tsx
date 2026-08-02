@@ -35,6 +35,7 @@ export function BookingInner() {
   const [roomId, setRoomId] = React.useState(ROOMS[0].id);
   const [requests, setRequests] = React.useState('');
   const [confirmed, setConfirmed] = React.useState(false);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const room = ROOMS.find((r) => r.id === roomId)!;
   const nights = nightsBetween(checkIn, checkOut);
@@ -48,6 +49,7 @@ export function BookingInner() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
 
     if (!guestName.trim() || guestName.trim().length < 2) {
       toast({ title: 'Please enter your full name', variant: 'destructive' });
@@ -67,8 +69,11 @@ export function BookingInner() {
         description: 'Check-out must be after check-in.',
         variant: 'destructive',
       });
+      setIsSubmitting(false);
       return;
     }
+
+    setIsSubmitting(true);
 
     // Payload sent to the server. Note: total/nights are NOT sent as
     // trusted values — the API route recomputes them from roomId +
@@ -110,6 +115,7 @@ export function BookingInner() {
           ? 'Too many attempts — please wait a minute and try again.'
           : 'Please check your details and try again.');
       toast({ title: 'Could not save booking', description, variant: 'destructive' });
+      setIsSubmitting(false);
       return;
     }
 
@@ -132,6 +138,7 @@ export function BookingInner() {
       title: 'Reservation saved',
       description: 'Your booking details were saved and sent to our concierge by email.',
     });
+    setIsSubmitting(false);
   };
 
   return (
@@ -354,9 +361,11 @@ export function BookingInner() {
 
                       <button
                         type="submit"
+                        disabled={isSubmitting}
+                        aria-busy={isSubmitting}
                         className="w-full rounded-full bg-gradient-to-r from-teal-400 to-ocean-500 px-6 py-4 text-base font-semibold text-white shadow-luxe transition hover:scale-[1.01] hover:brightness-110"
                       >
-                        Confirm Reservation
+                        {isSubmitting ? 'Sending reservation…' : 'Confirm Reservation'}
                       </button>
                       <p className="text-center text-xs text-muted-foreground">
                         No payment required now — we&apos;ll hold your reservation.

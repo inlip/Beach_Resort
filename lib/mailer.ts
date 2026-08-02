@@ -12,6 +12,9 @@ export function getMailer() {
     port: Number(process.env.SMTP_PORT ?? 587),
     secure: process.env.SMTP_SECURE === 'true',
     auth: { user: required('SMTP_USER'), pass: required('SMTP_PASS') },
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 10000,
   });
 }
 
