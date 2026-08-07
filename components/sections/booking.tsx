@@ -3,9 +3,15 @@
 import * as React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CalendarDays, Users, BedDouble, Baby, Check, Sparkles, Mail, Phone, User } from 'lucide-react';
-import { RESORT, ROOMS } from '@/lib/data';
+import { ROOMS } from '@/lib/data';
 import { Reveal } from '@/components/motion';
 import { useToast } from '@/hooks/use-toast';
+import {
+  formatDualCurrency,
+  formatInr,
+  formatUsdFromInr,
+  USD_TO_INR,
+} from '@/lib/currency';
 
 function todayISO(offsetDays = 0) {
   const d = new Date();
@@ -20,8 +26,6 @@ function nightsBetween(a: string, b: string) {
 }
 
 const BOOKINGS_STORAGE_KEY = 'azurea-bookings';
-const formatINR = (amount: number) =>
-  new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount);
 
 export function BookingInner() {
   const { toast } = useToast();
@@ -35,7 +39,6 @@ export function BookingInner() {
   const [roomId, setRoomId] = React.useState(ROOMS[0].id);
   const [requests, setRequests] = React.useState('');
   const [confirmed, setConfirmed] = React.useState(false);
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const room = ROOMS.find((r) => r.id === roomId)!;
   const nights = nightsBetween(checkIn, checkOut);
@@ -44,82 +47,47 @@ export function BookingInner() {
   const taxes = Math.round(base * 0.12);
   const total = base + service + taxes;
 
-  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const PHONE_RE = /^[+()\-\s\d]{6,20}$/;
-
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isSubmitting) return;
-
-    if (!guestName.trim() || guestName.trim().length < 2) {
-      toast({ title: 'Please enter your full name', variant: 'destructive' });
-      return;
-    }
-    if (!PHONE_RE.test(guestPhone)) {
-      toast({ title: 'Please enter a valid phone number', variant: 'destructive' });
-      return;
-    }
-    if (!EMAIL_RE.test(guestEmail)) {
-      toast({ title: 'Please enter a valid email address', variant: 'destructive' });
-      return;
-    }
     if (nights < 1) {
       toast({
         title: 'Please choose valid dates',
         description: 'Check-out must be after check-in.',
         variant: 'destructive',
       });
-      setIsSubmitting(false);
       return;
     }
 
-    setIsSubmitting(true);
-
-    // Payload sent to the server. Note: total/nights are NOT sent as
-    // trusted values — the API route recomputes them from roomId +
-    // dates so a tampered client request can't change the price.
-    const payload = {
-      guestName: guestName.trim(),
-      guestPhone: guestPhone.trim(),
-      guestEmail: guestEmail.trim(),
+    const bookingRequest = {
+      guestName,
+      guestPhone,
+      guestEmail,
       checkIn,
       checkOut,
       adults,
       children,
-      roomId: room.id,
-      requests: requests.trim(),
+      room: room.name,
+      nights,
+      requests,
+      total,
     };
 
-    let response: Response;
-    try {
-      response = await fetch('/api/bookings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-    } catch {
+    const response = await fetch('/api/bookings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(bookingRequest),
+    });
+
+    if (!response.ok) {
       toast({
-        title: 'Network error',
-        description: 'Could not reach the server. Please check your connection and try again.',
+        title: 'Could not save booking',
+        description: 'Please check the details and try again.',
         variant: 'destructive',
       });
       return;
     }
 
-    const result = await response.json().catch(() => null);
-
-    if (!response.ok || !result?.ok) {
-      const description =
-        result?.error ??
-        (response.status === 429
-          ? 'Too many attempts — please wait a minute and try again.'
-          : 'Please check your details and try again.');
-      toast({ title: 'Could not save booking', description, variant: 'destructive' });
-      setIsSubmitting(false);
-      return;
-    }
-
-    const booking = result.booking;
+    const { booking } = await response.json();
 
     try {
       const savedBookings = JSON.parse(
@@ -130,15 +98,14 @@ export function BookingInner() {
         JSON.stringify([booking, ...savedBookings]),
       );
     } catch {
-      // Some embedded browsers can disable localStorage; the server save above still records it.
+      // The SQLite database remains the source of truth if localStorage is unavailable.
     }
 
     setConfirmed(true);
     toast({
       title: 'Reservation saved',
-      description: 'Your booking details were saved and sent to our concierge by email.',
+      description: 'Your booking details were saved. Our concierge team will follow up shortly.',
     });
-    setIsSubmitting(false);
   };
 
   return (
@@ -317,7 +284,7 @@ export function BookingInner() {
                         >
                           {ROOMS.map((r) => (
                             <option key={r.id} value={r.id}>
-                              {r.name} — {formatINR(r.price)}/night
+                              {r.name} — {formatInr(r.price)} / {formatUsdFromInr(r.price)}
                             </option>
                           ))}
                         </select>
@@ -339,33 +306,37 @@ export function BookingInner() {
                           <span>
                             {room.name} × {nights} {nights === 1 ? 'night' : 'nights'}
                           </span>
-                            <span>{formatINR(base)}</span>
+                          <span className="text-right">{formatDualCurrency(base)}</span>
                         </div>
                         <div className="mt-1.5 flex items-center justify-between text-sm text-muted-foreground dark:text-white/70">
                           <span>Service charge (10%)</span>
-                          <span>{formatINR(service)}</span>
+                          <span className="text-right">{formatDualCurrency(service)}</span>
                         </div>
                         <div className="mt-1.5 flex items-center justify-between text-sm text-muted-foreground dark:text-white/70">
                           <span>Taxes (12%)</span>
-                          <span>{formatINR(taxes)}</span>
+                          <span className="text-right">{formatDualCurrency(taxes)}</span>
                         </div>
                         <div className="mt-3 flex items-center justify-between border-t border-ocean-100 pt-3 dark:border-white/10">
                           <span className="font-display text-lg font-semibold text-ocean-800 dark:text-white">
                             Estimated total
                           </span>
-                          <span className="font-display text-2xl font-bold text-teal-600 dark:text-teal-300">
-                            {formatINR(total)}
+                          <span className="text-right font-display text-xl font-bold text-teal-600 dark:text-teal-300 sm:text-2xl">
+                            <span className="block">{formatInr(total)}</span>
+                            <span className="mt-0.5 block text-sm font-semibold text-muted-foreground dark:text-white/65">
+                              {formatUsdFromInr(total)}
+                            </span>
                           </span>
                         </div>
+                        <p className="mt-3 text-right text-[11px] text-muted-foreground dark:text-white/50">
+                          USD shown for reference at ₹{USD_TO_INR.toFixed(2)} per US$1.
+                        </p>
                       </div>
 
                       <button
                         type="submit"
-                        disabled={isSubmitting}
-                        aria-busy={isSubmitting}
                         className="w-full rounded-full bg-gradient-to-r from-teal-400 to-ocean-500 px-6 py-4 text-base font-semibold text-white shadow-luxe transition hover:scale-[1.01] hover:brightness-110"
                       >
-                        {isSubmitting ? 'Sending reservation…' : 'Confirm Reservation'}
+                        Confirm Reservation
                       </button>
                       <p className="text-center text-xs text-muted-foreground">
                         No payment required now — we&apos;ll hold your reservation.

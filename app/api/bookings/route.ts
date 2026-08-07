@@ -1,146 +1,171 @@
-import { promises as fs } from 'fs';
-import path from 'path';
-import crypto from 'crypto';
 import { NextResponse } from 'next/server';
-import { ROOMS } from '@/lib/data';
-import { bookingInputSchema } from '@/lib/booking-schema';
-import { getMailer, mailConfig } from '@/lib/mailer';
+import { z } from 'zod';
+import { db } from '@/lib/db';
 
-const bookingsFile = path.join(process.cwd(), 'data', 'bookings.json');
+export const runtime = 'nodejs';
 
-// --- very small in-memory rate limiter -------------------------------
-// Good enough to stop naive spam/bot abuse on a single serverless
-// instance. For real protection at scale, move this to Upstash Redis,
-// Vercel KV, or a WAF rule in front of the route.
-const RATE_LIMIT_WINDOW_MS = 60_000;
-const RATE_LIMIT_MAX_REQUESTS = 5;
-const requestLog = new Map<string, number[]>();
+const bookingSchema = z.object({
+  guestName: z.string().trim().min(2).max(100),
+  guestPhone: z.string().trim().min(7).max(30),
+  guestEmail: z.string().trim().email().max(150),
+  checkIn: z.string().date(),
+  checkOut: z.string().date(),
+  adults: z.number().int().min(1).max(6),
+  children: z.number().int().min(0).max(4),
+  room: z.string().trim().min(2).max(100),
+  nights: z.number().int().positive().max(60),
+  requests: z.string().trim().max(1000).default(''),
+  total: z.number().int().nonnegative(),
+});
 
-function isRateLimited(ip: string) {
-  const now = Date.now();
-  const timestamps = (requestLog.get(ip) ?? []).filter(
-    (t) => now - t < RATE_LIMIT_WINDOW_MS,
-  );
-  timestamps.push(now);
-  requestLog.set(ip, timestamps);
-  return timestamps.length > RATE_LIMIT_MAX_REQUESTS;
+const insertBooking = db.prepare(`
+  INSERT INTO bookings (
+    id,
+    guest_name,
+    guest_phone,
+    guest_email,
+    check_in,
+    check_out,
+    adults,
+    children,
+    room,
+    nights,
+    requests,
+    total_inr,
+    status,
+    created_at
+  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)
+`);
+
+async function sendBookingNotification(booking: {
+  id: string;
+  guestName: string;
+  guestPhone: string;
+  guestEmail: string;
+  checkIn: string;
+  checkOut: string;
+  adults: number;
+  children: number;
+  room: string;
+  nights: number;
+  requests: string;
+  total: number;
+}) {
+  const apiKey = process.env.RESEND_API_KEY;
+  const recipient = process.env.BOOKING_NOTIFICATION_EMAIL;
+  const sender = process.env.BOOKING_FROM_EMAIL;
+
+  if (!apiKey || !recipient || !sender) {
+    return { sent: false, configured: false };
+  }
+
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: sender,
+      to: [recipient],
+      reply_to: booking.guestEmail,
+      subject: `New Azurea booking request — ${booking.id}`,
+      text: [
+        `Booking ID: ${booking.id}`,
+        `Guest: ${booking.guestName}`,
+        `Phone: ${booking.guestPhone}`,
+        `Email: ${booking.guestEmail}`,
+        `Stay: ${booking.checkIn} to ${booking.checkOut} (${booking.nights} nights)`,
+        `Guests: ${booking.adults} adults, ${booking.children} children`,
+        `Room: ${booking.room}`,
+        `Estimated total: ₹${booking.total.toLocaleString('en-IN')}`,
+        `Special requests: ${booking.requests || 'None'}`,
+      ].join('\n'),
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Resend returned ${response.status}`);
+  }
+
+  return { sent: true, configured: true };
 }
 
-function getClientIp(request: Request) {
-  const forwarded = request.headers.get('x-forwarded-for');
-  if (forwarded) return forwarded.split(',')[0].trim();
-  return request.headers.get('x-real-ip') ?? 'unknown';
-}
+export async function GET() {
+  const result = db
+    .prepare('SELECT COUNT(*) AS count FROM bookings')
+    .get() as { count: number };
 
-// Escape anything that could be interpreted as HTML if this value is
-// ever rendered in an admin dashboard or email template later.
-function sanitizeText(value: string) {
-  return value.replace(/[<>]/g, '');
-}
-
-function nightsBetween(checkIn: string, checkOut: string) {
-  const ms = new Date(checkOut).getTime() - new Date(checkIn).getTime();
-  return Math.round(ms / 86400000);
-}
-
-// Atomic write: write to a temp file then rename, so a crash or a
-// second concurrent request can never leave bookings.json truncated
-// or corrupted halfway through a write.
-async function writeBookingsAtomic(bookings: unknown[]) {
-  await fs.mkdir(path.dirname(bookingsFile), { recursive: true });
-  const tmpFile = `${bookingsFile}.${crypto.randomUUID()}.tmp`;
-  await fs.writeFile(tmpFile, JSON.stringify(bookings, null, 2));
-  await fs.rename(tmpFile, bookingsFile);
+  return NextResponse.json({
+    ok: true,
+    storage: 'sqlite',
+    bookingCount: result.count,
+  });
 }
 
 export async function POST(request: Request) {
-  const ip = getClientIp(request);
-  if (isRateLimited(ip)) {
-    return NextResponse.json(
-      { ok: false, error: 'Too many booking attempts. Please try again in a minute.' },
-      { status: 429 },
+  try {
+    const input = bookingSchema.parse(await request.json());
+    const checkIn = new Date(`${input.checkIn}T00:00:00Z`);
+    const checkOut = new Date(`${input.checkOut}T00:00:00Z`);
+    const calculatedNights = Math.round(
+      (checkOut.getTime() - checkIn.getTime()) / 86_400_000,
     );
-  }
 
-  let rawBody: unknown;
-  try {
-    rawBody = await request.json();
-  } catch {
-    return NextResponse.json({ ok: false, error: 'Invalid request body' }, { status: 400 });
-  }
+    if (calculatedNights !== input.nights || calculatedNights < 1) {
+      return NextResponse.json(
+        { ok: false, error: 'The selected stay dates are invalid.' },
+        { status: 400 },
+      );
+    }
 
-  const parsed = bookingInputSchema.safeParse(rawBody);
-  if (!parsed.success) {
-    return NextResponse.json(
-      { ok: false, error: 'Validation failed', issues: parsed.error.flatten() },
-      { status: 400 },
+    const booking = {
+      ...input,
+      id: `AZ-${crypto.randomUUID()}`,
+      createdAt: new Date().toISOString(),
+      status: 'pending',
+    };
+
+    insertBooking.run(
+      booking.id,
+      booking.guestName,
+      booking.guestPhone,
+      booking.guestEmail,
+      booking.checkIn,
+      booking.checkOut,
+      booking.adults,
+      booking.children,
+      booking.room,
+      booking.nights,
+      booking.requests,
+      booking.total,
+      booking.createdAt,
     );
-  }
 
-  const data = parsed.data;
-  const room = ROOMS.find((r) => r.id === data.roomId);
-  if (!room) {
-    return NextResponse.json({ ok: false, error: 'Room not found' }, { status: 400 });
-  }
+    let notification = { sent: false, configured: false };
+    try {
+      notification = await sendBookingNotification(booking);
+    } catch (error) {
+      console.error('Booking email error:', error);
+    }
 
-  // Recompute pricing server-side. Never trust a total sent by the client.
-  const nights = nightsBetween(data.checkIn, data.checkOut);
-  const base = room.price * Math.max(nights, 1);
-  const service = Math.round(base * 0.1);
-  const taxes = Math.round(base * 0.12);
-  const total = base + service + taxes;
+    return NextResponse.json({ ok: true, booking, notification }, { status: 201 });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: 'Please check the booking details and try again.',
+          fields: error.flatten().fieldErrors,
+        },
+        { status: 400 },
+      );
+    }
 
-  const booking = {
-    id: `AZ-${Date.now()}-${crypto.randomBytes(3).toString('hex')}`,
-    guestName: sanitizeText(data.guestName),
-    guestPhone: sanitizeText(data.guestPhone),
-    guestEmail: data.guestEmail,
-    checkIn: data.checkIn,
-    checkOut: data.checkOut,
-    adults: data.adults,
-    children: data.children,
-    roomId: room.id,
-    room: room.name,
-    nights,
-    requests: sanitizeText(data.requests ?? ''),
-    base,
-    service,
-    taxes,
-    total,
-    createdAt: new Date().toISOString(),
-  };
-
-  let bookings: unknown[] = [];
-  try {
-    bookings = JSON.parse(await fs.readFile(bookingsFile, 'utf8'));
-    if (!Array.isArray(bookings)) bookings = [];
-  } catch {
-    bookings = [];
-  }
-
-  bookings.unshift(booking);
-
-  try {
-    await writeBookingsAtomic(bookings);
-  } catch (err) {
-    console.error('Failed to persist booking', err);
+    console.error('Booking database error:', error);
     return NextResponse.json(
-      { ok: false, error: 'Could not save booking. Please try again.' },
+      { ok: false, error: 'The booking could not be saved.' },
       { status: 500 },
     );
   }
-
-  try {
-    const config = mailConfig();
-    await getMailer().sendMail({
-      ...config,
-      replyTo: booking.guestEmail,
-      subject: `New booking request ${booking.id}`,
-      text: `Guest: ${booking.guestName}\nEmail: ${booking.guestEmail}\nPhone: ${booking.guestPhone}\nRoom: ${booking.room}\nStay: ${booking.checkIn} to ${booking.checkOut}\nGuests: ${booking.adults} adults, ${booking.children} children\nTotal: ${booking.total}\nRequests: ${booking.requests || 'None'}`,
-    });
-  } catch (err) {
-    console.error('Booking email failed', err);
-  }
-
-  return NextResponse.json({ ok: true, booking });
 }
