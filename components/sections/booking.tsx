@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CalendarDays, Users, BedDouble, Baby, Check, Sparkles, Mail, Phone, User } from 'lucide-react';
-import { RESORT, ROOMS } from '@/lib/data';
+import { ROOMS } from '@/lib/data';
 import { Reveal } from '@/components/motion';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -81,7 +81,7 @@ export function BookingInner() {
     if (!response.ok) {
       toast({
         title: 'Could not save booking',
-        description: 'Please try again before sending the WhatsApp request.',
+        description: 'Please check the details and try again.',
         variant: 'destructive',
       });
       return;
@@ -101,25 +101,10 @@ export function BookingInner() {
       // The SQLite database remains the source of truth if localStorage is unavailable.
     }
 
-    const message = [
-      `New booking request for ${RESORT.fullName}`,
-      `Booking ID: ${booking.id}`,
-      `Guest: ${guestName}`,
-      `Phone: ${guestPhone}`,
-      `Email: ${guestEmail}`,
-      `Stay: ${checkIn} to ${checkOut} (${nights} ${nights === 1 ? 'night' : 'nights'})`,
-      `Guests: ${adults} adult${adults === 1 ? '' : 's'}, ${children} child${children === 1 ? '' : 'ren'}`,
-      `Room: ${room.name}`,
-      `Estimated total: ${formatDualCurrency(total)}`,
-      `Special requests: ${requests || 'None'}`,
-    ].join('\n');
-
-    window.open(`${RESORT.whatsappHref}?text=${encodeURIComponent(message)}`, '_blank');
-
     setConfirmed(true);
     toast({
       title: 'Reservation saved',
-      description: 'Your booking details were stored and WhatsApp is ready to send.',
+      description: 'Your booking details were saved. Our concierge team will follow up shortly.',
     });
   };
 

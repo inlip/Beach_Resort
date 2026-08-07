@@ -37,6 +37,60 @@ const insertBooking = db.prepare(`
   ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)
 `);
 
+async function sendBookingNotification(booking: {
+  id: string;
+  guestName: string;
+  guestPhone: string;
+  guestEmail: string;
+  checkIn: string;
+  checkOut: string;
+  adults: number;
+  children: number;
+  room: string;
+  nights: number;
+  requests: string;
+  total: number;
+}) {
+  const apiKey = process.env.RESEND_API_KEY;
+  const recipient = process.env.BOOKING_NOTIFICATION_EMAIL;
+  const sender = process.env.BOOKING_FROM_EMAIL;
+
+  if (!apiKey || !recipient || !sender) {
+    return { sent: false, configured: false };
+  }
+
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: sender,
+      to: [recipient],
+      reply_to: booking.guestEmail,
+      subject: `New Azurea booking request — ${booking.id}`,
+      text: [
+        `Booking ID: ${booking.id}`,
+        `Guest: ${booking.guestName}`,
+        `Phone: ${booking.guestPhone}`,
+        `Email: ${booking.guestEmail}`,
+        `Stay: ${booking.checkIn} to ${booking.checkOut} (${booking.nights} nights)`,
+        `Guests: ${booking.adults} adults, ${booking.children} children`,
+        `Room: ${booking.room}`,
+        `Estimated total: ₹${booking.total.toLocaleString('en-IN')}`,
+        `Special requests: ${booking.requests || 'None'}`,
+      ].join('\n'),
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Resend returned ${response.status}`);
+  }
+
+  return { sent: true, configured: true };
+}
+
 export async function GET() {
   const result = db
     .prepare('SELECT COUNT(*) AS count FROM bookings')
@@ -88,7 +142,14 @@ export async function POST(request: Request) {
       booking.createdAt,
     );
 
-    return NextResponse.json({ ok: true, booking }, { status: 201 });
+    let notification = { sent: false, configured: false };
+    try {
+      notification = await sendBookingNotification(booking);
+    } catch (error) {
+      console.error('Booking email error:', error);
+    }
+
+    return NextResponse.json({ ok: true, booking, notification }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
