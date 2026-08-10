@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Portfolio Assistant</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Urbanist:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <img src="logo.png" alt="DeveLearn" class="brand-logo">
+    <div class="brand-title">Portfolio Assistant</div>
+  </header>
+  <main class="wrap">
+    <p class="lede">A preview page for the assistant and the booking panel. In your project, these two panels live on your portfolio site.</p>
+
+    <section class="panel">
+      <h2>Ask about me</h2>
+      <div id="nudges" class="nudges"></div>
+      <div id="chatlog" class="chatlog"></div>
+      <div class="chatrow">
+        <input id="chatInput" type="text" placeholder="Ask a question...">
+        <button id="send" class="btn">Send</button>
+      </div>
+      <p id="chatStatus" class="status"></p>
+    </section>
+
+    <section class="panel">
+      <h2>Book a time</h2>
+      <p class="sub">Open one-hour slots. Pick one to request an appointment.</p>
+      <div id="slots" class="slots"></div>
+      <div id="bookingForm" class="booking-form hidden">
+        <div class="chosen" id="chosen"></div>
+        <input id="name" type="text" placeholder="Your name">
+        <input id="contact" type="text" placeholder="Email or phone">
+        <button id="confirm" class="btn">Confirm booking</button>
+      </div>
+      <p id="bookStatus" class="status"></p>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

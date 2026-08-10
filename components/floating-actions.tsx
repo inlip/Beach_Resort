@@ -2,12 +2,12 @@
 
 import * as React from 'react';
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion';
-import { MessageCircle, ArrowUp, X, Phone, Sparkles } from 'lucide-react';
+import { ArrowUp } from 'lucide-react';
 import { RESORT } from '@/lib/data';
+import { ResortChat } from '@/components/resort-chat';
 
 export function FloatingActions() {
   const [showTop, setShowTop] = React.useState(false);
-  const [chatOpen, setChatOpen] = React.useState(false);
   const { scrollY } = useScroll();
   useMotionValueEvent(scrollY, 'change', (v) => setShowTop(v > 600));
 
@@ -30,55 +30,7 @@ export function FloatingActions() {
         </svg>
       </motion.a>
 
-      {/* Live chat */}
-      <div className="fixed bottom-24 right-6 z-40">
-        <AnimatePresence>
-          {chatOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: 20, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 20, scale: 0.95 }}
-              className="mb-3 w-72 overflow-hidden rounded-2xl bg-white shadow-luxe ring-1 ring-ocean-100 dark:bg-ocean-800 dark:ring-white/10"
-            >
-              <div className="bg-gradient-to-r from-teal-400 to-ocean-500 p-4 text-white">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="h-5 w-5" />
-                    <span className="font-display text-lg font-semibold">Azurea Concierge</span>
-                  </div>
-                  <button onClick={() => setChatOpen(false)} aria-label="Close chat">
-                    <X className="h-5 w-5" />
-                  </button>
-                </div>
-                <p className="mt-1 text-xs text-white/85">Typically replies in minutes</p>
-              </div>
-              <div className="p-4">
-                <div className="rounded-2xl rounded-tl-sm bg-sand-50 p-3 text-sm text-ocean-800 dark:bg-ocean-900/60 dark:text-white">
-                  Hello! Welcome to Azurea. How can we help plan your perfect escape?
-                </div>
-                <a
-                  href={RESORT.whatsappHref}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="mt-3 flex w-full items-center justify-center gap-2 rounded-full bg-ocean-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-ocean-600"
-                >
-                  <Phone className="h-4 w-4" />
-                  Chat with us
-                </a>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-        <motion.button
-          onClick={() => setChatOpen((o) => !o)}
-          aria-label="Open live chat"
-          whileHover={{ scale: 1.08 }}
-          whileTap={{ scale: 0.95 }}
-          className="flex h-12 w-12 items-center justify-center rounded-full bg-ocean-600 text-white shadow-luxe"
-        >
-          <MessageCircle className="h-6 w-6" />
-        </motion.button>
-      </div>
+      <ResortChat />
 
       {/* Scroll to top */}
       <AnimatePresence>
