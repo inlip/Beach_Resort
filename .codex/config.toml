@@ -1,0 +1,13 @@
+[mcp_servers.filesystem]
+command = "npx"
+args = ["-y", "@modelcontextprotocol/server-filesystem", "."]
+default_tools_approval_mode = "writes"
+
+# Google Calendar over MCP. Requires the one-time OAuth setup in the README.
+# Authenticate once with:  npx @cocal/google-calendar-mcp auth
+[mcp_servers.google-calendar]
+command = "npx"
+args = ["-y", "@cocal/google-calendar-mcp"]
+
+[mcp_servers.google-calendar.env]
+GOOGLE_OAUTH_CREDENTIALS = "./gcp-oauth.keys.json"
