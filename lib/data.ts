@@ -13,6 +13,7 @@ import {
   Clapperboard,
   type LucideIcon,
 } from 'lucide-react';
+import { formatDualCurrency } from '@/lib/currency';
 
 export const RESORT = {
   name: 'Azurea',
@@ -51,6 +52,10 @@ export type Room = {
   amenities: string[];
   tag?: string;
 };
+
+export function formatPrice(price: number) {
+  return formatDualCurrency(price);
+}
 
 export const ROOMS: Room[] = [
   {
@@ -118,7 +123,7 @@ export const ROOMS: Room[] = [
   },
 ];
 
-export type Amenity = { icon: LucideIcon; name: string; desc: string };
+export type Amenity = { icon: LucideIcon; name: string; desc: string; image?: string };
 
 export const AMENITIES: Amenity[] = [
   { icon: Waves, name: 'Infinity Pool', desc: 'Horizon-edge pool overlooking the lagoon' },

@@ -44,7 +44,7 @@ export function Amenities() {
               className="group rounded-2xl glass p-6 text-white transition hover:bg-white/20"
             >
               <div className="relative mb-5 h-28 overflow-hidden rounded-xl">
-                <img src={a.image} alt={a.name} loading="eager" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+                <img src={a.image || 'https://images.pexels.com/photos/1450363/pexels-photo-1450363.jpeg?auto=compress&cs=tinysrgb&w=900'} alt={a.name} loading="eager" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
                 <div className="absolute inset-0 bg-gradient-to-t from-ocean-900/50 to-transparent" />
               </div>
               <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 text-teal-100 transition group-hover:bg-teal-300 group-hover:text-ocean-700">
