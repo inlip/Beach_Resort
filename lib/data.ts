@@ -21,8 +21,6 @@ export const RESORT = {
   tagline: 'Luxury Beach Resort • Oceanfront Villas • World-Class Hospitality',
   phone: '+960 999 0000',
   phoneHref: 'tel:+9609990000',
-  whatsapp: '+9609990000',
-  whatsappHref: 'https://wa.me/9609990000',
   email: 'stay@azurea-resort.example.com',
   address: '1 Lagoon Crescent, Paradise Atoll, Paradise Island',
   instagram: 'https://instagram.com',

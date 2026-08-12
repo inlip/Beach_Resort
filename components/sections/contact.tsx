@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { motion } from 'framer-motion';
-import { Phone, Mail, MapPin, MessageCircle, Send, Facebook, Instagram, Twitter, Youtube } from 'lucide-react';
+import { Phone, Mail, MapPin, Send, Facebook, Instagram, Twitter, Youtube } from 'lucide-react';
 import { Reveal } from '@/components/motion';
 import { RESORT } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
@@ -58,12 +58,6 @@ export function Contact() {
             </div>
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
               <InfoCard icon={Phone} label="Phone" value={RESORT.phone} href={RESORT.phoneHref} />
-              <InfoCard
-                icon={MessageCircle}
-                label="WhatsApp"
-                value={RESORT.whatsapp}
-                href={RESORT.whatsappHref}
-              />
               <InfoCard
                 icon={Mail}
                 label="Email"
