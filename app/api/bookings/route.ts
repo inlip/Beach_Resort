@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { db } from '@/lib/db';
-import { isRoomAvailable } from '@/lib/room-availability';
+import { supabase } from '@/lib/supabase';
 
 export const runtime = 'nodejs';
 
@@ -18,25 +17,6 @@ const bookingSchema = z.object({
   requests: z.string().trim().max(1000).default(''),
   total: z.number().int().nonnegative(),
 });
-
-const insertBooking = db.prepare(`
-  INSERT INTO bookings (
-    id,
-    guest_name,
-    guest_phone,
-    guest_email,
-    check_in,
-    check_out,
-    adults,
-    children,
-    room,
-    nights,
-    requests,
-    total_inr,
-    status,
-    created_at
-  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)
-`);
 
 async function sendBookingNotification(booking: {
   id: string;
@@ -57,52 +37,58 @@ async function sendBookingNotification(booking: {
   const sender = process.env.BOOKING_FROM_EMAIL;
 
   if (!apiKey || !recipient || !sender) {
-    return { sent: false, configured: false };
+    return { ownerSent: false, guestSent: false, configured: false };
   }
 
-  const response = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      from: sender,
-      to: [recipient],
-      reply_to: booking.guestEmail,
-      subject: 'New booking enquiry',
-      text: [
-        `Booking ID: ${booking.id}`,
-        `Guest: ${booking.guestName}`,
-        `Phone: ${booking.guestPhone}`,
-        `Email: ${booking.guestEmail}`,
-        `Stay: ${booking.checkIn} to ${booking.checkOut} (${booking.nights} nights)`,
-        `Guests: ${booking.adults} adults, ${booking.children} children`,
-        `Room: ${booking.room}`,
-        `Estimated total: ₹${booking.total.toLocaleString('en-IN')}`,
-        `Special requests: ${booking.requests || 'None'}`,
-      ].join('\n'),
-    }),
+  const send = async (message: Record<string, unknown>) => {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(message),
+    });
+    if (!response.ok) throw new Error(`Resend returned ${response.status}`);
+  };
+
+  await send({
+    from: sender,
+    to: [recipient],
+    reply_to: booking.guestEmail,
+    subject: 'New booking enquiry',
+    text: [
+      `Booking ID: ${booking.id}`,
+      `Guest: ${booking.guestName}`,
+      `Phone: ${booking.guestPhone}`,
+      `Email: ${booking.guestEmail}`,
+      `Stay: ${booking.checkIn} to ${booking.checkOut} (${booking.nights} nights)`,
+      `Guests: ${booking.adults} adults, ${booking.children} children`,
+      `Room: ${booking.room}`,
+      `Estimated total: ₹${booking.total.toLocaleString('en-IN')}`,
+      `Special requests: ${booking.requests || 'None'}`,
+    ].join('\n'),
   });
 
-  if (!response.ok) {
-    throw new Error(`Resend returned ${response.status}`);
-  }
-
-  return { sent: true, configured: true };
-}
-
-export async function GET() {
-  const result = db
-    .prepare('SELECT COUNT(*) AS count FROM bookings')
-    .get() as { count: number };
-
-  return NextResponse.json({
-    ok: true,
-    storage: 'sqlite',
-    bookingCount: result.count,
+  await send({
+    from: sender,
+    to: [booking.guestEmail],
+    subject: 'Booking enquiry received',
+    text: [
+      `Hello ${booking.guestName},`,
+      '',
+      'Thank you for your enquiry. We have received your booking request and our concierge team will be in touch shortly.',
+      '',
+      `Room: ${booking.room}`,
+      `Stay: ${booking.checkIn} to ${booking.checkOut} (${booking.nights} nights)`,
+      `Estimated total: ₹${booking.total.toLocaleString('en-IN')}`,
+    ].join('\n'),
   });
+
+  return { ownerSent: true, guestSent: true, configured: true };
 }
+
+export async function GET() { return NextResponse.json({ ok: true, storage: 'supabase' }); }
 
 export async function POST(request: Request) {
   try {
@@ -127,38 +113,16 @@ export async function POST(request: Request) {
       status: 'pending',
     };
 
-    db.exec('BEGIN IMMEDIATE');
-    try {
-      if (!isRoomAvailable(booking.room, booking.checkIn, booking.checkOut)) {
-        db.exec('ROLLBACK');
-        return NextResponse.json(
-          { ok: false, error: 'This room is no longer available for the selected dates.' },
-          { status: 409 },
-        );
-      }
+    const { error: saveError } = await supabase().from('bookings').insert({
+      id: booking.id, guest_name: booking.guestName, guest_phone: booking.guestPhone, guest_email: booking.guestEmail,
+      check_in: booking.checkIn, check_out: booking.checkOut, adults: booking.adults, children: booking.children,
+      room: booking.room, nights: booking.nights, requests: booking.requests, total_inr: booking.total,
+      status: booking.status, created_at: booking.createdAt,
+    });
+    if (saveError?.code === '23P01') return NextResponse.json({ ok: false, error: 'This room is no longer available for the selected dates.' }, { status: 409 });
+    if (saveError) throw saveError;
 
-      insertBooking.run(
-        booking.id,
-        booking.guestName,
-        booking.guestPhone,
-        booking.guestEmail,
-        booking.checkIn,
-        booking.checkOut,
-        booking.adults,
-        booking.children,
-        booking.room,
-        booking.nights,
-        booking.requests,
-        booking.total,
-        booking.createdAt,
-      );
-      db.exec('COMMIT');
-    } catch (error) {
-      try { db.exec('ROLLBACK'); } catch { /* Transaction was not active. */ }
-      throw error;
-    }
-
-    let notification = { sent: false, configured: false };
+    let notification = { ownerSent: false, guestSent: false, configured: false };
     try {
       notification = await sendBookingNotification(booking);
     } catch (error) {
