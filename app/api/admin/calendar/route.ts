@@ -7,7 +7,7 @@ export const runtime = 'nodejs';
 
 type BookingRow = { id: string; room: string; check_in: string; check_out: string; nights: number; total_inr: number; status: string };
 
-export function GET(request: NextRequest) {
+export async function GET(request: NextRequest) {
   if (!isOwnerSession(request.cookies.get(ADMIN_COOKIE)?.value)) return NextResponse.json({ ok: false, error: 'Unauthorized.' }, { status: 401 });
   const month = request.nextUrl.searchParams.get('month') ?? new Date().toISOString().slice(0, 7);
   if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) return NextResponse.json({ ok: false, error: 'Invalid month.' }, { status: 400 });
