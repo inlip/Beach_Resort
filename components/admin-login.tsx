@@ -1,0 +1,9 @@
+'use client';
+import * as React from 'react';
+import { useRouter } from 'next/navigation';
+
+export function AdminLogin() {
+  const router = useRouter(); const [password, setPassword] = React.useState(''); const [error, setError] = React.useState(''); const [pending, setPending] = React.useState(false);
+  async function submit(event: React.FormEvent) { event.preventDefault(); setPending(true); setError(''); try { const response = await fetch('/api/admin/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password }) }); const data = await response.json() as { ok?: boolean; error?: string }; if (!response.ok || !data.ok) throw new Error(data.error || 'Could not sign in.'); router.refresh(); } catch (reason) { setError(reason instanceof Error ? reason.message : 'Could not sign in.'); } finally { setPending(false); } }
+  return <main className="flex min-h-screen items-center justify-center bg-sand-50 px-5 dark:bg-ocean-900"><form onSubmit={submit} className="w-full max-w-sm rounded-3xl bg-white p-8 shadow-luxe dark:bg-ocean-800"><p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-600">Azurea owner</p><h1 className="mt-3 font-display text-3xl font-semibold text-ocean-800 dark:text-white">Occupancy calendar</h1><label className="mt-7 block text-sm font-semibold text-ocean-700 dark:text-white/80">Password<input type="password" value={password} onChange={(event) => setPassword(event.target.value)} className="input mt-2" required autoComplete="current-password" /></label>{error && <p className="mt-3 text-sm text-red-600">{error}</p>}<button disabled={pending} className="mt-6 w-full rounded-full bg-ocean-600 px-5 py-3 font-semibold text-white disabled:opacity-60">{pending ? 'Signing in…' : 'Sign in'}</button></form></main>;
+}

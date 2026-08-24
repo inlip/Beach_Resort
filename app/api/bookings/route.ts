@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/lib/db';
+import { isRoomAvailable } from '@/lib/room-availability';
 
 export const runtime = 'nodejs';
 
@@ -69,7 +70,7 @@ async function sendBookingNotification(booking: {
       from: sender,
       to: [recipient],
       reply_to: booking.guestEmail,
-      subject: `New Azurea booking request — ${booking.id}`,
+      subject: 'New booking enquiry',
       text: [
         `Booking ID: ${booking.id}`,
         `Guest: ${booking.guestName}`,
@@ -126,21 +127,36 @@ export async function POST(request: Request) {
       status: 'pending',
     };
 
-    insertBooking.run(
-      booking.id,
-      booking.guestName,
-      booking.guestPhone,
-      booking.guestEmail,
-      booking.checkIn,
-      booking.checkOut,
-      booking.adults,
-      booking.children,
-      booking.room,
-      booking.nights,
-      booking.requests,
-      booking.total,
-      booking.createdAt,
-    );
+    db.exec('BEGIN IMMEDIATE');
+    try {
+      if (!isRoomAvailable(booking.room, booking.checkIn, booking.checkOut)) {
+        db.exec('ROLLBACK');
+        return NextResponse.json(
+          { ok: false, error: 'This room is no longer available for the selected dates.' },
+          { status: 409 },
+        );
+      }
+
+      insertBooking.run(
+        booking.id,
+        booking.guestName,
+        booking.guestPhone,
+        booking.guestEmail,
+        booking.checkIn,
+        booking.checkOut,
+        booking.adults,
+        booking.children,
+        booking.room,
+        booking.nights,
+        booking.requests,
+        booking.total,
+        booking.createdAt,
+      );
+      db.exec('COMMIT');
+    } catch (error) {
+      try { db.exec('ROLLBACK'); } catch { /* Transaction was not active. */ }
+      throw error;
+    }
 
     let notification = { sent: false, configured: false };
     try {
