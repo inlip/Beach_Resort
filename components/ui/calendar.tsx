@@ -23,13 +23,17 @@ function Calendar({
         months: 'flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0',
         month: 'space-y-4',
         caption: 'flex justify-center pt-1 relative items-center',
-        caption_label: 'text-sm font-medium',
-        caption_dropdowns: 'flex items-center gap-2',
+        caption_label:
+          'pointer-events-none relative z-[1] inline-flex items-center gap-1 whitespace-nowrap px-3 py-2 text-sm font-semibold text-ocean-800 peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 dark:text-white',
+        caption_dropdowns: 'flex items-center justify-center gap-2',
         dropdown:
-          'rounded-md border border-input bg-background px-2 py-1 text-sm font-medium text-foreground shadow-sm outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
-        dropdown_month: 'relative',
-        dropdown_year: 'relative',
-        dropdown_icon: 'ml-1 h-4 w-4 opacity-60',
+          'peer absolute inset-0 z-10 h-full w-full cursor-pointer appearance-none opacity-0',
+        dropdown_month:
+          'relative inline-flex min-w-[7.5rem] items-center justify-center rounded-xl border border-ocean-100 bg-white shadow-sm transition hover:border-teal-300 dark:border-white/15 dark:bg-ocean-900',
+        dropdown_year:
+          'relative inline-flex min-w-[5.75rem] items-center justify-center rounded-xl border border-ocean-100 bg-white shadow-sm transition hover:border-teal-300 dark:border-white/15 dark:bg-ocean-900',
+        dropdown_icon: 'ml-1 h-3.5 w-3.5 opacity-60',
+        vhidden: 'sr-only',
         nav: 'space-x-1 flex items-center',
         nav_button: cn(
           buttonVariants({ variant: 'outline' }),
